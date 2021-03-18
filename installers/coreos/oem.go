@@ -20,7 +20,7 @@ func serveOEM(w http.ResponseWriter, req *http.Request) {
 	if j, err := job.CreateFromRemoteAddr(req.RemoteAddr); err == nil {
 		isARM = j.IsARM()
 	} else {
-		installers.Logger("coreos").With("client", req.RemoteAddr).Info(err, "retrieved job is empty")
+		installers.Logger("coreos").With("ip", req.RemoteAddr).Info(err, "retrieved job is empty")
 	}
 
 	tw := tarball.New(w)

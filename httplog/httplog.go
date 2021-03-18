@@ -26,7 +26,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log = false
 	}
 	if log {
-		httplog.With("event", "sr", "method", method, "uri", uri, "client", client).Debug()
+		httplog.With("event", "sr", "method", method, "uri", uri, "ip", client).Debug()
 	}
 
 	res := &ResponseWriter{ResponseWriter: w}

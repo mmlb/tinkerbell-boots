@@ -207,16 +207,16 @@ func (c *Client) DiscoverHardwareFromIP(ip net.IP) (Discovery, error) {
 	return NewDiscovery(b)
 }
 
-// GetDeviceIDFromIP Looks up a device (instance) in cacher via ByIP
-func (c *Client) GetInstanceIDFromIP(dip net.IP) (string, error) {
+// GetIDsFromIP Looks up a device in cacher via ByIP and returns the hardware and instance ids
+func (c *Client) GetIDsFromIP(dip net.IP) (HardwareID, string, error) {
 	d, err := c.DiscoverHardwareFromIP(dip)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	if d.Instance() == nil {
-		return "", nil
+		return d.Hardware().HardwareID(), "", nil
 	}
-	return d.Instance().ID, nil
+	return d.Hardware().HardwareID(), d.Instance().ID, nil
 }
 
 // PostHardwareComponent - POSTs a HardwareComponent to the API
@@ -224,7 +224,7 @@ func (c *Client) PostHardwareComponent(hardwareID HardwareID, body io.Reader) (*
 	var response ComponentsResponse
 
 	if err := c.Post("/hardware/"+hardwareID.String()+"/components", mimeJSON, body, &response); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "posting hardware components")
 	}
 
 	return &response, nil

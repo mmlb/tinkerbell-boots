@@ -2,15 +2,16 @@ let _pkgs = import <nixpkgs> { };
 in { pkgs ? import (_pkgs.fetchFromGitHub {
   owner = "NixOS";
   repo = "nixpkgs";
-  #branch@date: nixpkgs@2020-11-24
-  rev = "6625284c397b44bc9518a5a1567c1b5aae455c08";
-  sha256 = "1w0czzv53sg35gp7sr506facbmzd33jm34p6cg23fb9kz5rf5c89";
+  #branch@date: nixpkgs-unstables@2021-01-25
+  rev = "ce7b327a52d1b82f82ae061754545b1c54b06c66";
+  sha256 = "1rc4if8nmy9lrig0ddihdwpzg2s8y36vf20hfywb8hph5hpsg4vj";
 }) { } }:
 
 with pkgs;
 
 mkShell {
   buildInputs = [
+    (docker.override { buildxSupport = true; })
     gcc
     git-lfs
     gnumake

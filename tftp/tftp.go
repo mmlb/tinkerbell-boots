@@ -26,7 +26,7 @@ type tftpTransfer struct {
 
 // Open sets up a tftp transfer object that implements tftpgo.ReadCloser
 func Open(mac net.HardwareAddr, filename, client string) (*tftpTransfer, error) {
-	l := tftplog.With("mac", mac, "client", client, "filename", filename)
+	l := tftplog.With("mac", mac, "ip", client, "filename", filename)
 
 	content, ok := tftpFiles[filename]
 	if !ok {

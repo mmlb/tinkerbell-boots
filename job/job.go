@@ -2,7 +2,6 @@ package job
 
 import (
 	"net"
-	"os"
 	"time"
 
 	"github.com/packethost/pkg/log"
@@ -121,19 +120,6 @@ func CreateFromIP(ip net.IP) (Job, error) {
 	if err != nil {
 		return Job{}, err
 	}
-
-	if os.Getenv("DATA_MODEL_VERSION") != "1" {
-		return j, nil
-	}
-
-	hd := d.Hardware()
-	hwID := hd.HardwareID()
-
-	joblog.With("hardwareID", hwID).Info("fetching workflows for hardware")
-	if err != nil {
-		return Job{}, err
-	}
-
 	return j, nil
 }
 
@@ -149,7 +135,7 @@ func (j Job) MarkDeviceActive() {
 func (j *Job) setup(d packet.Discovery) error {
 	dh := d.Hardware()
 
-	j.Logger = joblog.With("mac", j.mac, "hardware.id", dh.HardwareID())
+	j.Logger = joblog.With("mac", j.mac, "hardware_id", dh.HardwareID())
 
 	// mac is needed to find the hostname for DiscoveryCacher
 	d.SetMAC(j.mac)
@@ -162,13 +148,15 @@ func (j *Job) setup(d packet.Discovery) error {
 	if j.instance == nil {
 		j.instance = &packet.Instance{}
 	} else {
-		j.Logger = j.Logger.With("instance.id", j.InstanceID())
+		j.Logger = j.Logger.With("instance_id", j.InstanceID())
 	}
 
 	ip := d.GetIP(j.mac)
 	if ip.Address == nil {
 		return errors.New("could not find IP address")
 	}
+	j.Logger = j.Logger.With("ip", ip)
+
 	j.dhcp.Setup(ip.Address, ip.Netmask, ip.Gateway)
 	j.dhcp.SetLeaseTime(d.LeaseTime(j.mac))
 	j.dhcp.SetDHCPServer(conf.PublicIPv4) // used for the unicast DHCPREQUEST

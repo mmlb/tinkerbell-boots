@@ -40,7 +40,7 @@ func serveIgnitionConfig(distro string) func(w http.ResponseWriter, req *http.Re
 	return func(w http.ResponseWriter, req *http.Request) {
 		j, err := job.CreateFromRemoteAddr(req.RemoteAddr)
 		if err != nil {
-			installers.Logger(distro).With("client", req.RemoteAddr).Error(err)
+			installers.Logger(distro).With("ip", req.RemoteAddr).Error(err)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}

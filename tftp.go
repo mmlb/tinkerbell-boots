@@ -50,7 +50,7 @@ func (tftpHandler) ReadFile(c tftp.Conn, filename string) (tftp.ReadCloser, erro
 
 	ip := tftpClientIP(c.RemoteAddr())
 	filename = path.Base(filename)
-	l := mainlog.With("client", ip.String(), "event", "open", "filename", filename)
+	l := mainlog.With("ip", ip.String(), "event", "open", "filename", filename)
 
 	j, err := job.CreateFromIP(ip)
 	if err != nil {

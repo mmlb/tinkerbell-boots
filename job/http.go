@@ -60,6 +60,7 @@ func (j Job) ServePhoneHomeEndpoint(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	j.With("phone-home-event", string(b)).Info("handling phone-home event")
 	j.phoneHome(b)
 
 	w.WriteHeader(http.StatusOK)
