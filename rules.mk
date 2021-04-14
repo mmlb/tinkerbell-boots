@@ -42,6 +42,7 @@ $(toolsBins): tools.go
 generated_files := \
 	ipxe/bindata.go \
 	packet/mock_cacher/cacher_mock.go \
+	packet/mock_hardware/hardware_mock.go \
 	packet/mock_workflow/workflow_mock.go \
 	syslog/facility_string.go \
 	syslog/severity_string.go \
