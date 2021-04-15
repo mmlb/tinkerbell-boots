@@ -9,10 +9,10 @@ import (
 var (
 	DHCPTotal *prometheus.CounterVec
 
-	CacherDuration           prometheus.ObserverVec
-	CacherCacheHits          *prometheus.CounterVec
-	CacherTotal              *prometheus.CounterVec
-	CacherRequestsInProgress *prometheus.GaugeVec
+	TinkDuration           prometheus.ObserverVec
+	TinkCacheHits          *prometheus.CounterVec
+	TinkTotal              *prometheus.CounterVec
+	TinkRequestsInProgress *prometheus.GaugeVec
 
 	DiscoverDuration    prometheus.ObserverVec
 	HardwareDiscovers   *prometheus.CounterVec
@@ -42,20 +42,20 @@ func Init(_ log.Logger) {
 	}
 	initCounterLabels(DHCPTotal, labelValues)
 
-	CacherDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+	TinkDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "cacher_request_duration_seconds",
 		Help:    "Duration of cacher requests.",
 		Buckets: prometheus.LinearBuckets(.01, .05, 10),
 	}, []string{"from"})
-	CacherCacheHits = promauto.NewCounterVec(prometheus.CounterOpts{
+	TinkCacheHits = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "cacher_cache_hits",
 		Help: "Number of requests which returned data from cacher.",
 	}, []string{"from"})
-	CacherTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+	TinkTotal = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "cacher_total",
 		Help: "Total number of requests to the cacher service.",
 	}, []string{"from"})
-	CacherRequestsInProgress = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	TinkRequestsInProgress = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "cacher_requests_in_progress",
 		Help: "Number of cacher requests that have yet to receive a response.",
 	}, []string{"from"})
@@ -64,10 +64,10 @@ func Init(_ log.Logger) {
 		{"from": "dhcp"},
 		{"from": "ip"},
 	}
-	initObserverLabels(CacherDuration, labelValues)
-	initCounterLabels(CacherCacheHits, labelValues)
-	initCounterLabels(CacherTotal, labelValues)
-	initGaugeLabels(CacherRequestsInProgress, labelValues)
+	initObserverLabels(TinkDuration, labelValues)
+	initCounterLabels(TinkCacheHits, labelValues)
+	initCounterLabels(TinkTotal, labelValues)
+	initGaugeLabels(TinkRequestsInProgress, labelValues)
 
 	DiscoverDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "discover_duration_seconds",

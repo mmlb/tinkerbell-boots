@@ -41,14 +41,14 @@ func (c *Client) GetWorkflowsFromTink(hwID HardwareID) (result *tw.WorkflowConte
 	}
 
 	labels := prometheus.Labels{"from": "dhcp"}
-	cacherTimer := prometheus.NewTimer(metrics.CacherDuration.With(labels))
-	metrics.CacherRequestsInProgress.With(labels).Inc()
-	metrics.CacherTotal.With(labels).Inc()
+	cacherTimer := prometheus.NewTimer(metrics.TinkDuration.With(labels))
+	metrics.TinkRequestsInProgress.With(labels).Inc()
+	metrics.TinkTotal.With(labels).Inc()
 
 	result, err = c.workflowClient.GetWorkflowContextList(context.Background(), &tw.WorkflowContextRequest{WorkerId: hwID.String()})
 
 	cacherTimer.ObserveDuration()
-	metrics.CacherRequestsInProgress.With(labels).Dec()
+	metrics.TinkRequestsInProgress.With(labels).Dec()
 
 	if err != nil {
 		return result, errors.Wrap(err, "error while fetching the workflow")
@@ -63,9 +63,9 @@ func (c *Client) DiscoverHardwareFromDHCP(mac net.HardwareAddr, giaddr net.IP, c
 	}
 
 	labels := prometheus.Labels{"from": "dhcp"}
-	cacherTimer := prometheus.NewTimer(metrics.CacherDuration.With(labels))
-	metrics.CacherRequestsInProgress.With(labels).Inc()
-	metrics.CacherTotal.With(labels).Inc()
+	cacherTimer := prometheus.NewTimer(metrics.TinkDuration.With(labels))
+	metrics.TinkRequestsInProgress.With(labels).Inc()
+	metrics.TinkTotal.With(labels).Inc()
 
 	dataModelVersion := os.Getenv("DATA_MODEL_VERSION")
 	switch dataModelVersion {
@@ -78,7 +78,7 @@ func (c *Client) DiscoverHardwareFromDHCP(mac net.HardwareAddr, giaddr net.IP, c
 		resp, err := cc.ByMAC(context.Background(), msg)
 
 		cacherTimer.ObserveDuration()
-		metrics.CacherRequestsInProgress.With(labels).Dec()
+		metrics.TinkRequestsInProgress.With(labels).Dec()
 
 		if err != nil {
 			return nil, errors.Wrap(err, "get hardware by mac from cacher")
@@ -86,7 +86,7 @@ func (c *Client) DiscoverHardwareFromDHCP(mac net.HardwareAddr, giaddr net.IP, c
 
 		b := []byte(resp.JSON)
 		if string(b) != "" {
-			metrics.CacherCacheHits.With(labels).Inc()
+			metrics.TinkCacheHits.With(labels).Inc()
 			return NewDiscovery(b)
 		}
 	case "1":
@@ -98,7 +98,7 @@ func (c *Client) DiscoverHardwareFromDHCP(mac net.HardwareAddr, giaddr net.IP, c
 		resp, err := tc.ByMAC(context.Background(), msg)
 
 		cacherTimer.ObserveDuration()
-		metrics.CacherRequestsInProgress.With(labels).Dec()
+		metrics.TinkRequestsInProgress.With(labels).Dec()
 
 		if err != nil {
 			return nil, errors.Wrap(err, "get hardware by mac from tink")
@@ -110,7 +110,7 @@ func (c *Client) DiscoverHardwareFromDHCP(mac net.HardwareAddr, giaddr net.IP, c
 		}
 
 		if string(b) != "{}" {
-			metrics.CacherCacheHits.With(labels).Inc()
+			metrics.TinkCacheHits.With(labels).Inc()
 			return NewDiscovery(b)
 		}
 
@@ -157,10 +157,10 @@ func (c *Client) DiscoverHardwareFromIP(ip net.IP) (Discovery, error) {
 	}
 
 	labels := prometheus.Labels{"from": "ip"}
-	cacherTimer := prometheus.NewTimer(metrics.CacherDuration.With(labels))
+	cacherTimer := prometheus.NewTimer(metrics.TinkDuration.With(labels))
 	defer cacherTimer.ObserveDuration()
-	metrics.CacherRequestsInProgress.With(labels).Inc()
-	defer metrics.CacherRequestsInProgress.With(labels).Dec()
+	metrics.TinkRequestsInProgress.With(labels).Inc()
+	defer metrics.TinkRequestsInProgress.With(labels).Dec()
 
 	var b []byte
 	dataModelVersion := os.Getenv("DATA_MODEL_VERSION")
@@ -174,7 +174,7 @@ func (c *Client) DiscoverHardwareFromIP(ip net.IP) (Discovery, error) {
 		resp, err := cc.ByIP(context.Background(), msg)
 
 		cacherTimer.ObserveDuration()
-		metrics.CacherRequestsInProgress.With(labels).Dec()
+		metrics.TinkRequestsInProgress.With(labels).Dec()
 
 		if err != nil {
 			return nil, errors.Wrap(err, "get hardware by ip from cacher")
@@ -190,7 +190,7 @@ func (c *Client) DiscoverHardwareFromIP(ip net.IP) (Discovery, error) {
 		resp, err := tc.ByIP(context.Background(), msg)
 
 		cacherTimer.ObserveDuration()
-		metrics.CacherRequestsInProgress.With(labels).Dec()
+		metrics.TinkRequestsInProgress.With(labels).Dec()
 
 		if err != nil {
 			return nil, errors.Wrap(err, "get hardware by ip from tink")
