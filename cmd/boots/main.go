@@ -9,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tinkerbell/boots/conf"
 	"github.com/tinkerbell/boots/dhcp"
-	"github.com/tinkerbell/boots/httplog"
 	"github.com/tinkerbell/boots/installers"
 	"github.com/tinkerbell/boots/job"
 	"github.com/tinkerbell/boots/metrics"
@@ -50,7 +49,6 @@ func main() {
 	metrics.Init(l)
 	dhcp.Init(l)
 	conf.Init(l)
-	httplog.Init(l)
 	installers.Init(l)
 	job.Init(l)
 	syslog.Init(l)
@@ -69,7 +67,7 @@ func main() {
 		mainlog.With("envvar", "API_AUTH_TOKEN").Fatal(err)
 		panic(err)
 	}
-	client, err = packet.NewClient(consumer, auth, apiBaseURL)
+	client, err = packet.NewClient(l, consumer, auth, apiBaseURL)
 	if err != nil {
 		mainlog.Fatal(err)
 	}
@@ -95,5 +93,5 @@ func main() {
 	go ServeDHCP()
 
 	mainlog.Info("serving http")
-	ServeHTTP()
+	ServeHTTP(l)
 }

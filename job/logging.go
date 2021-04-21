@@ -4,11 +4,11 @@ import (
 	"github.com/packethost/pkg/log"
 )
 
-var joblog log.Logger
+//var joblog log.Logger
 
 func Init(l log.Logger) {
-	joblog = l.Package("http")
-	initRSA()
+	//joblog = l.Package("http")
+	initRSA(l)
 }
 
 func (j Job) Fatal(err error, args ...interface{}) {

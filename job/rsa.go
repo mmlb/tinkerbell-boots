@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"net/http"
 
+	"github.com/packethost/pkg/log"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 )
@@ -16,18 +17,18 @@ var rsaKeypair struct {
 	pub []byte
 }
 
-func initRSA() {
+func initRSA(l log.Logger) {
 	k, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		err := errors.Wrap(err, "generate RSA key")
-		joblog.Fatal(err)
+		l.Package("job").Fatal(err)
 	}
 	k.Precompute()
 
 	pub, err := ssh.NewPublicKey(k.Public())
 	if err != nil {
 		err := errors.Wrap(err, "encode SSH public key")
-		joblog.Fatal(err)
+		l.Package("job").Fatal(err)
 	}
 
 	rsaKeypair.key = k
@@ -35,10 +36,6 @@ func initRSA() {
 }
 
 func decryptPassword(b []byte) (string, error) {
-	if rsaKeypair.key == nil {
-		err := errors.New("missing RSA private key")
-		joblog.Fatal(err)
-	}
 	pass, err := rsaKeypair.key.Decrypt(rand.Reader, b, nil)
 	if err != nil {
 		return "", errors.Wrap(err, "decrypt submitted password")

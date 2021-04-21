@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/packethost/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -54,8 +55,8 @@ func serveHealthchecker(rev string, start time.Time) http.HandlerFunc {
 	}
 }
 
-// ServeHTTP is a useless comment
-func ServeHTTP() {
+// ServeHTTP handles http calls
+func ServeHTTP(l log.Logger) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveJobFile)
 	mux.Handle("/metrics", promhttp.Handler())
@@ -83,18 +84,13 @@ func ServeHTTP() {
 	installers.RegisterHTTPHandlers(mux)
 
 	var h http.Handler
+	h = httplog.Handler(l, mux)
 	if len(conf.TrustedProxies) > 0 {
 		xffmw, _ := xff.New(xff.Options{
 			AllowedSubnets: conf.TrustedProxies,
 		})
 
-		h = xffmw.Handler(&httplog.Handler{
-			Handler: mux,
-		})
-	} else {
-		h = &httplog.Handler{
-			Handler: mux,
-		}
+		h = xffmw.Handler(h)
 	}
 
 	if err := http.ListenAndServe(httpAddr, h); err != nil {

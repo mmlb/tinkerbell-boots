@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	dhcp4 "github.com/packethost/dhcp4-go"
+	"github.com/packethost/pkg/log"
 	assert "github.com/stretchr/testify/require"
 	"github.com/tinkerbell/boots/conf"
 	"github.com/tinkerbell/boots/packet"
@@ -77,7 +78,7 @@ func TestSetPXEFilename(t *testing.T) {
 				},
 			}
 			j := Job{
-				Logger: joblog.With("index", i, "hState", tt.hState, "id", tt.id, "iState", tt.iState, "slug", tt.slug, "plan", tt.plan, "allowPXE", tt.allowPXE, "packet", tt.packet, "arm", tt.arm, "uefi", tt.uefi, "filename", tt.filename),
+				Logger: log.Test(t, "test").With("index", i, "hState", tt.hState, "id", tt.id, "iState", tt.iState, "slug", tt.slug, "plan", tt.plan, "allowPXE", tt.allowPXE, "packet", tt.packet, "arm", tt.arm, "uefi", tt.uefi, "filename", tt.filename),
 				hardware: &packet.HardwareCacher{
 					ID:       "$hardware_id",
 					State:    packet.HardwareState(tt.hState),

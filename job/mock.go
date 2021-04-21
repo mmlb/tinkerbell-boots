@@ -57,8 +57,8 @@ func NewMock(t zaptest.TestingT, slug, facility string) Mock {
 
 func NewMockFromDiscovery(d packet.Discovery, mac net.HardwareAddr) Mock {
 	mockLog, _ := log.Init("job.Mock")
-	j := Job{Logger: mockLog, mac: mac}
-	j.setup(d)
+	j := Job{mac: mac}
+	j.setup(mockLog, d)
 	return Mock(j)
 }
 

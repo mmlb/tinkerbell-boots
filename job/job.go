@@ -72,7 +72,7 @@ func HasActiveWorkflow(hwID packet.HardwareID) (bool, error) {
 }
 
 // CreateFromDHCP looks up hardware using the MAC from cacher to create a job
-func CreateFromDHCP(mac net.HardwareAddr, giaddr net.IP, circuitID string) (Job, error) {
+func CreateFromDHCP(l log.Logger, mac net.HardwareAddr, giaddr net.IP, circuitID string) (Job, error) {
 	j := Job{
 		mac:   mac,
 		start: time.Now(),
@@ -83,7 +83,7 @@ func CreateFromDHCP(mac net.HardwareAddr, giaddr net.IP, circuitID string) (Job,
 		return Job{}, errors.WithMessage(err, "discover from dhcp message")
 	}
 
-	err = j.setup(d)
+	err = j.setup(l.Package("job"), d)
 	if err != nil {
 		return Job{}, err
 	}
@@ -91,33 +91,34 @@ func CreateFromDHCP(mac net.HardwareAddr, giaddr net.IP, circuitID string) (Job,
 }
 
 // CreateFromRemoteAddr looks up hardware using the IP from cacher to create a job
-func CreateFromRemoteAddr(ip string) (Job, error) {
+func CreateFromRemoteAddr(l log.Logger, ip string) (Job, error) {
 	host, _, err := net.SplitHostPort(ip)
 	if err != nil {
 		return Job{}, errors.Wrap(err, "splitting host:ip")
 	}
-	return CreateFromIP(net.ParseIP(host))
+	return CreateFromIP(l, net.ParseIP(host))
 }
 
 // CreateFromIP looksup hardware using the IP from cacher to create a job
-func CreateFromIP(ip net.IP) (Job, error) {
+func CreateFromIP(l log.Logger, ip net.IP) (Job, error) {
 	j := Job{
 		ip:    ip,
 		start: time.Now(),
 	}
 
-	joblog.With("ip", ip).Info("discovering from ip")
+	l = l.Package("job").With("ip", ip)
+	l.Info("discovering from ip")
 	d, err := discoverHardwareFromIP(ip)
 	if err != nil {
 		return Job{}, errors.WithMessage(err, "discovering from ip address")
 	}
 	mac := d.GetMAC(ip)
 	if mac.String() == packet.ZeroMAC.String() {
-		joblog.With("ip", ip).Fatal(errors.New("somehow got a zero mac"))
+		l.Fatal(errors.New("somehow got a zero mac"))
 	}
 	j.mac = mac
 
-	err = j.setup(d)
+	err = j.setup(l, d)
 	if err != nil {
 		return Job{}, err
 	}
@@ -129,7 +130,7 @@ func CreateFromIP(ip net.IP) (Job, error) {
 	hd := d.Hardware()
 	hwID := hd.HardwareID()
 
-	joblog.With("hardwareID", hwID).Info("fetching workflows for hardware")
+	l.With("hardwareID", hwID).Info("fetching workflows for hardware")
 	if err != nil {
 		return Job{}, err
 	}
@@ -146,10 +147,10 @@ func (j Job) MarkDeviceActive() {
 	}
 }
 
-func (j *Job) setup(d packet.Discovery) error {
+func (j *Job) setup(l log.Logger, d packet.Discovery) error {
 	dh := d.Hardware()
 
-	j.Logger = joblog.With("mac", j.mac, "hardware.id", dh.HardwareID())
+	j.Logger = l.With("mac", j.mac, "hardware.id", dh.HardwareID())
 
 	// mac is needed to find the hostname for DiscoveryCacher
 	d.SetMAC(j.mac)

@@ -127,7 +127,7 @@ func TestGetWorkflowsFromTink(t *testing.T) {
 			cMock := workflowMock.NewMockWorkflowServiceClient(ctrl)
 			cMock.EXPECT().GetWorkflowContextList(gomock.Any(), gomock.Any()).Return(test.wcl, test.err)
 
-			c := NewMockClient(u, cMock)
+			c := NewMockClient(log.Test(t, "test"), u, cMock)
 			w, err := c.GetWorkflowsFromTink(test.hwID)
 			if test.err != nil {
 				assert.Error(t, err)

@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/packethost/pkg/log"
 	"github.com/tinkerbell/boots/packet"
 )
 
@@ -36,7 +37,7 @@ func TestPhoneHome(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	SetClient(packet.NewMockClient(u, nil))
+	SetClient(packet.NewMockClient(log.Test(t, "test"), u, nil))
 
 	for name, test := range phoneHomeTests {
 		t.Run(name, func(t *testing.T) {
@@ -49,7 +50,7 @@ func TestPhoneHome(t *testing.T) {
 				},
 			}
 			j := Job{
-				Logger: joblog.With("test", name),
+				Logger: log.Test(t, "test"),
 				mode:   modeInstance,
 				hardware: &packet.HardwareCacher{
 					ID:       "$hardware_id",

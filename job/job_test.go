@@ -12,7 +12,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/packethost/pkg/log"
 	assert "github.com/stretchr/testify/require"
-	"github.com/tinkerbell/boots/httplog"
 	"github.com/tinkerbell/boots/metrics"
 	"github.com/tinkerbell/boots/packet"
 	workflowMock "github.com/tinkerbell/boots/packet/mock_workflow"
@@ -25,9 +24,8 @@ func TestMain(m *testing.M) {
 	os.Setenv("ROLLBAR_DISABLE", "1")
 	os.Setenv("ROLLBAR_TOKEN", "1")
 
-	joblog, _ = log.Init("github.com/tinkerbell/boots")
-	httplog.Init(joblog)
-	metrics.Init(joblog)
+	l, _ := log.Init("github.com/tinkerbell/boots")
+	metrics.Init(l)
 	os.Exit(m.Run())
 }
 
@@ -57,7 +55,7 @@ func TestSetupDiscover(t *testing.T) {
 	}
 
 	j := &Job{mac: macIPMI.HardwareAddr()}
-	j.setup(d)
+	j.setup(log.Test(t, "test"), d)
 
 	dh := d.Hardware()
 	h := dh.(*packet.HardwareCacher)
@@ -116,7 +114,7 @@ func TestSetupManagement(t *testing.T) {
 	h := dh.(*packet.HardwareCacher)
 
 	j := &Job{mac: macIPMI.HardwareAddr()}
-	j.setup(d)
+	j.setup(log.Test(t, "test"), d)
 
 	mode := d.Mode()
 
@@ -148,7 +146,7 @@ func TestSetupInstance(t *testing.T) {
 	d, macs, _ = MakeHardwareWithInstance()
 
 	j := &Job{mac: macs[1].HardwareAddr()}
-	j.setup(d)
+	j.setup(log.Test(t, "test"), d)
 
 	mode := d.Mode()
 
@@ -176,7 +174,7 @@ func TestSetupFails(t *testing.T) {
 	var d packet.Discovery = &packet.DiscoveryCacher{HardwareCacher: &packet.HardwareCacher{}}
 	j := &Job{}
 
-	err := j.setup(d)
+	err := j.setup(log.Test(t, "test"), d)
 	if err == nil {
 		t.Fatal("expected an error but got nil")
 	}
@@ -242,7 +240,7 @@ func TestHasActiveWorkflow(t *testing.T) {
 			defer ctrl.Finish()
 			cMock := workflowMock.NewMockWorkflowServiceClient(ctrl)
 			cMock.EXPECT().GetWorkflowContextList(gomock.Any(), gomock.Any()).Return(test.wcl, nil)
-			c := packet.NewMockClient(u, cMock)
+			c := packet.NewMockClient(log.Test(t, "test"), u, cMock)
 			SetClient(c)
 			s, err := HasActiveWorkflow("Hardware-fake-bde9-812726eff314")
 			if err != nil {
@@ -256,7 +254,7 @@ func TestHasActiveWorkflow(t *testing.T) {
 func TestSetupWithoutInstance(t *testing.T) {
 	d, mac := MakeHardwareWithoutInstance()
 	j := &Job{mac: mac.HardwareAddr()}
-	j.setup(d)
+	j.setup(log.Test(t, "test"), d)
 
 	hostname, _ := d.Hostname()
 	if hostname != j.dhcp.Hostname() {

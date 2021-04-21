@@ -8,6 +8,7 @@ import (
 	"github.com/gammazero/workerpool"
 	dhcp4 "github.com/packethost/dhcp4-go"
 	"github.com/packethost/pkg/env"
+	"github.com/packethost/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/tinkerbell/boots/conf"
@@ -22,9 +23,12 @@ func init() {
 }
 
 // ServeDHCP is a useless comment
-func ServeDHCP() {
+func ServeDHCP(l log.Logger) {
 	poolSize := env.Int("BOOTS_DHCP_WORKERS", runtime.GOMAXPROCS(0)/2)
-	handler := dhcpHandler{pool: workerpool.New(poolSize)}
+	handler := dhcpHandler{
+		pool:   workerpool.New(poolSize),
+		logger: l,
+	}
 	defer handler.pool.Stop()
 
 	err := retry.Do(
@@ -38,7 +42,8 @@ func ServeDHCP() {
 }
 
 type dhcpHandler struct {
-	pool *workerpool.WorkerPool
+	pool   *workerpool.WorkerPool
+	logger log.Logger
 }
 
 func (d dhcpHandler) ServeDHCP(w dhcp4.ReplyWriter, req *dhcp4.Packet) {
@@ -71,7 +76,7 @@ func (d dhcpHandler) serveDHCP(w dhcp4.ReplyWriter, req *dhcp4.Packet) {
 		mainlog.With("mac", mac, "circuitID", circuitID).Info("parsed option82/circuitid")
 	}
 
-	j, err := job.CreateFromDHCP(mac, gi, circuitID)
+	j, err := job.CreateFromDHCP(d.logger, mac, gi, circuitID)
 	if err != nil {
 		mainlog.With("type", req.GetMessageType(), "mac", mac, "err", err).Info("retrieved job is empty")
 		metrics.JobsInProgress.With(labels).Dec()

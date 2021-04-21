@@ -23,7 +23,8 @@ type BootScript func(Job, *ipxe.Script)
 func RegisterDefaultInstaller(bootScript BootScript) {
 	if defaultInstaller != nil {
 		err := errors.New("default installer already registered!")
-		joblog.Fatal(err)
+		panic(err)
+		//joblog.Fatal(err)
 	}
 	defaultInstaller = bootScript
 }
@@ -31,7 +32,8 @@ func RegisterDefaultInstaller(bootScript BootScript) {
 func RegisterDistro(name string, builder BootScript) {
 	if _, ok := byDistro[name]; ok {
 		err := errors.Errorf("distro %q already registered!", name)
-		joblog.Fatal(err, "distro", name)
+		panic(err)
+		//joblog.Fatal(err, "distro", name)
 	}
 	byDistro[name] = builder
 }
@@ -39,7 +41,8 @@ func RegisterDistro(name string, builder BootScript) {
 func RegisterSlug(name string, builder BootScript) {
 	if _, ok := bySlug[name]; ok {
 		err := errors.Errorf("slug %q already registered!", name)
-		joblog.Fatal(err, "slug", name)
+		panic(err)
+		//joblog.Fatal(err, "slug", name)
 	}
 	bySlug[name] = builder
 }

@@ -11,6 +11,7 @@ import (
 
 	cacherClient "github.com/packethost/cacher/client"
 	"github.com/packethost/pkg/env"
+	"github.com/packethost/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/tinkerbell/boots/httplog"
 	tinkClient "github.com/tinkerbell/tink/client"
@@ -30,7 +31,7 @@ type Client struct {
 	workflowClient tw.WorkflowServiceClient
 }
 
-func NewClient(consumerToken, authToken string, baseURL *url.URL) (*Client, error) {
+func NewClient(l log.Logger, consumerToken, authToken string, baseURL *url.URL) (*Client, error) {
 	t, ok := http.DefaultTransport.(*http.Transport)
 	if !ok {
 		return nil, errors.New("unexpected type for http.DefaultTransport")
@@ -41,9 +42,7 @@ func NewClient(consumerToken, authToken string, baseURL *url.URL) (*Client, erro
 	transport.MaxIdleConnsPerHost = env.Int("BOOTS_HTTP_HOST_CONNECTIONS", runtime.GOMAXPROCS(0)/2)
 
 	c := &http.Client{
-		Transport: &httplog.Transport{
-			RoundTripper: transport,
-		},
+		Transport: httplog.Transport(l, transport),
 	}
 
 	var hg hardwareGetter
@@ -83,12 +82,9 @@ func NewClient(consumerToken, authToken string, baseURL *url.URL) (*Client, erro
 	}, nil
 }
 
-func NewMockClient(baseURL *url.URL, workflowClient tw.WorkflowServiceClient) *Client {
-	t := &httplog.Transport{
-		RoundTripper: http.DefaultTransport,
-	}
+func NewMockClient(l log.Logger, baseURL *url.URL, workflowClient tw.WorkflowServiceClient) *Client {
 	c := &http.Client{
-		Transport: t,
+		Transport: httplog.Transport(l, http.DefaultTransport),
 	}
 	return &Client{
 		http:           c,
