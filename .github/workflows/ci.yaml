@@ -29,23 +29,27 @@ jobs:
         with:
           go-version: "1.16.3"
       - name: Generate all files
-        run: nix-shell --run 'make gen && make ipxe'
+        run: make gen && make ipxe
+        shell: nix-shell --run 'bash -eo pipefail {0}'
       - name: goimports
         run: go get golang.org/x/tools/cmd/goimports && goimports -d . | (! grep .)
       - name: go vet
         run: go mod tidy && go vet ./...
       - name: golangci-lint brought to you by Nix
-        run: nix-shell --run 'GOROOT= golangci-lint run -v'
+        run: GOROOT= golangci-lint run -v
+        shell: nix-shell --run 'bash -eo pipefail {0}'
       - name: go test
         run: go test -v ./... -gcflags=-l
       - name: Run iPXE tests
-        run: nix-shell --run 'make test-ipxe'
+        run: make test-ipxe
+        shell: nix-shell --run 'bash -eo pipefail {0}'
       - name: go test coverage
         run: go test -coverprofile=coverage.txt ./... -gcflags=-l
       - name: upload codecov
         run: bash <(curl -s https://codecov.io/bash)
       - name: compile binaries
-        run: nix-shell --run 'make crosscompile'
+        run: make crosscompile
+        shell: nix-shell --run 'bash -eo pipefail {0}'
       - name: Docker Image Tag for Sha
         id: docker-image-tag
         run: |
