@@ -78,6 +78,7 @@ func kernelParams(ctx context.Context, action, state string, j job.Job, s ipxe.S
 	s.Args("syslog_host=${syslog_host}")
 	s.Args("parch=${parch}")
 	s.Args("packet_action=${action}")
+	s.Args("packet_base_url=${base_url}")
 	s.Args("packet_state=${state}")
 
 	// only add traceparent if tracing is enabled
@@ -95,10 +96,6 @@ func kernelParams(ctx context.Context, action, state string, j job.Job, s ipxe.S
 	// Don't bother including eclypsium_token if none is provided
 	if conf.EclypsiumToken != "" && j.HardwareState() == "deprovisioning" {
 		s.Args("eclypsium_token=" + conf.EclypsiumToken)
-	}
-
-	if isCustomOSIE(j) {
-		s.Args("packet_base_url=" + osieBaseURL(j))
 	}
 
 	if j.CanWorkflow() {
