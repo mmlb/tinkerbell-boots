@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultOSIEPath = "/misc/osie"
+	defaultPath = "/misc/osie"
 )
 
 var (
@@ -34,9 +34,9 @@ func buildOSIEURL() (*url.URL, error) {
 
 		return u, nil
 	}
-	u, err := base.Parse(defaultOSIEPath)
+	u, err := base.Parse(defaultPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "invalid default osie path: %s", defaultOSIEPath)
+		return nil, errors.Wrapf(err, "invalid default osie path: %s", defaultPath)
 	}
 
 	return u, nil
