@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/packethost/pkg/env"
 	"github.com/pkg/errors"
 	"github.com/tinkerbell/boots/conf"
 	"github.com/tinkerbell/boots/installers"
@@ -18,7 +19,7 @@ var (
 	mirrorBaseURL                      = conf.MirrorBaseUrl
 	dockerRegistry                     string
 	grpcAuthority, grpcCertURL         string
-	defaultVersion                     = "current"
+	defaultVersion                     = env.Get("BOOTS_OSIE_DEFAULT_VERSION", "current")
 	registryUsername, registryPassword string
 )
 

@@ -87,9 +87,9 @@ func TestScript(t *testing.T) {
 
 func TestDefaultVersionFromEnv(t *testing.T) {
 	defer func(old string) {
-		osieDefaultVersion = old
-	}(osieDefaultVersion)
-	osieDefaultVersion = "v42"
+		defaultVersion = old
+	}(defaultVersion)
+	defaultVersion = "v42"
 
 	plan := "baremetal_0"
 	m := job.NewMock(t, plan, facility)
@@ -114,11 +114,19 @@ func TestDefaultVersionFromEnv(t *testing.T) {
 
 	want := strings.TrimSuffix(prefaces[action], "\n")
 	want += action2Plan2Body[action][plan]
-	want = strings.ReplaceAll(want, "current", osieDefaultVersion)
 	want = fmt.Sprintf(want, action, state, "x86_64", "x86_64", mac)
+	want = strings.ReplaceAll(want, "/current", "/"+defaultVersion)
+	if i := strings.Index(want, "/current"); i != -1 {
+		t.Fatalf("founded string that should have been replaced in want at index:%d, want:%s", i, want)
+	}
+	if i := strings.Index(want, "/"+defaultVersion); i == -1 {
+		t.Fatalf("did not find overridden defaultVersion in want string, want:%s", want)
+	}
+
 	if want != got {
 		t.Fatalf("%s bad iPXE script:\n%v", plan, diff.LineDiff(want, got))
 	}
+
 }
 
 func genRandMAC(t *testing.T) string {
