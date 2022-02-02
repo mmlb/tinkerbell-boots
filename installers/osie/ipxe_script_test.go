@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/andreyvit/diff"
@@ -101,6 +102,42 @@ func TestScript(t *testing.T) {
 				})
 			}
 		})
+	}
+}
+
+func TestDefaultVersionFromEnv(t *testing.T) {
+	defer func(old string) {
+		osieDefaultVersion = old
+	}(osieDefaultVersion)
+	osieDefaultVersion = "v42"
+
+	plan := "baremetal_0"
+	m := job.NewMock(t, plan, facility)
+	m.SetManufacturer("supermicro")
+	m.SetOSSlug("ubuntu_16_04_image")
+	action := "install"
+	state := "provisioning"
+	m.SetState(state)
+	mac := genRandMAC(t)
+	m.SetMAC(mac)
+
+	s := ipxe.Script{}
+	s.Echo("Tinkerbell Boots iPXE")
+	s.Set("iface", "eth0").Or("shell")
+	s.Set("tinkerbell", "http://127.0.0.1")
+	s.Set("syslog_host", "127.0.0.1")
+	s.Set("ipxe_cloud_config", "packet")
+	o := Installer{}
+	ctx := context.Background()
+	bs := o.Install()(ctx, m.Job(), s)
+	got := string(bs.Bytes())
+
+	want := strings.TrimSuffix(prefaces[action], "\n")
+	want += action2Plan2Body[action][plan]
+	want = strings.ReplaceAll(want, "current", osieDefaultVersion)
+	want = fmt.Sprintf(want, action, state, "x86_64", "x86_64", mac)
+	if want != got {
+		t.Fatalf("%s bad iPXE script:\n%v", plan, diff.LineDiff(want, got))
 	}
 }
 

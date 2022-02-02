@@ -18,6 +18,7 @@ var (
 	mirrorBaseURL                      = conf.MirrorBaseUrl
 	dockerRegistry                     string
 	grpcAuthority, grpcCertURL         string
+	defaultVersion                     = "current"
 	registryUsername, registryPassword string
 )
 

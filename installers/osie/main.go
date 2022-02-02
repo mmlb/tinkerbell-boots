@@ -199,7 +199,7 @@ func osieBaseURL(j job.Job) string {
 		return osieURL + "/" + j.OSIEVersion()
 	}
 
-	return osieURL + "/current"
+	return osieURL + "/" + defaultVersion
 }
 
 func workflowBaseURL() string {
