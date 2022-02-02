@@ -13,26 +13,6 @@ import (
 	"github.com/tinkerbell/boots/job"
 )
 
-func genRandMAC(t *testing.T) string {
-	buf := make([]byte, 6)
-	_, err := rand.Read(buf)
-	if err != nil {
-		t.Fatal(err)
-	}
-	buf[0] = (buf[0] | 2) & 0xfe // Set local bit, ensure unicast address
-
-	return fmt.Sprintf("%02x:%02x:%02x:%02x:%02x:%02x", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5])
-}
-
-var facility = func() string {
-	fac := os.Getenv("FACILITY_CODE")
-	if fac == "" {
-		fac = "ewr1"
-	}
-
-	return fac
-}()
-
 func TestScript(t *testing.T) {
 	for action, plan2Body := range action2Plan2Body {
 		t.Run(action, func(t *testing.T) {
@@ -140,6 +120,26 @@ func TestDefaultVersionFromEnv(t *testing.T) {
 		t.Fatalf("%s bad iPXE script:\n%v", plan, diff.LineDiff(want, got))
 	}
 }
+
+func genRandMAC(t *testing.T) string {
+	buf := make([]byte, 6)
+	_, err := rand.Read(buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	buf[0] = (buf[0] | 2) & 0xfe // Set local bit, ensure unicast address
+
+	return fmt.Sprintf("%02x:%02x:%02x:%02x:%02x:%02x", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5])
+}
+
+var facility = func() string {
+	fac := os.Getenv("FACILITY_CODE")
+	if fac == "" {
+		fac = "ewr1"
+	}
+
+	return fac
+}()
 
 var prefaces = map[string]string{
 	"discover": `echo Tinkerbell Boots iPXE
