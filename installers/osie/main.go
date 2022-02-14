@@ -118,7 +118,6 @@ func kernelParams(ctx context.Context, action, state string, j job.Job, s ipxe.S
 			s.Args("docker_registry=" + dockerRegistry)
 		}
 		s.Args("grpc_authority=" + grpcAuthority)
-		s.Args("grpc_cert_url=" + grpcCertURL)
 		s.Args("instance_id=" + j.InstanceID())
 		if registryUsername != "" {
 			s.Args("registry_username=" + registryUsername)
