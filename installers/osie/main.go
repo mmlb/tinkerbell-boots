@@ -127,6 +127,9 @@ func kernelParams(ctx context.Context, action, state string, j job.Job, s ipxe.S
 			s.Args("registry_password=" + registryPassword)
 		}
 		s.Args("packet_base_url=" + workflowBaseURL())
+		if tinkerbellTLS != "" {
+			s.Args("tinkerbell_tls=" + tinkerbellTLS)
+		}
 		s.Args("worker_id=" + j.HardwareID().String())
 	}
 
